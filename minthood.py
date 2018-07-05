@@ -1,18 +1,26 @@
 from getpass import getpass
 
+import keyring
+
 from mint.api import MintApi
 from robinhood.api import RobinhoodApi
 
 
 def main():
     username = input("Robinhood username: ")
-    password = getpass("Robinhood password: ")
+    password = keyring.get_password("minthood-robinhood", username)
+
+    if not password:
+        password = getpass("Robinhood password: ")
 
     robinhood = RobinhoodApi(username, password)
 
     login = robinhood.login()
 
     if login:
+        # store valid creds
+        keyring.set_password("minthood-robinhood", username, password)
+
         # get accounts
         robinhood_accounts = robinhood.get_accounts()
 
@@ -25,12 +33,19 @@ def main():
 
         # update the corresponding account in Mint
         username = input("Mint username: ")
-        password = getpass("Mint password: ")
+
+        password = keyring.get_password("minthood-mint", username)
+
+        if not password:
+            password = getpass("Mint password: ")
 
         try:
             mint = MintApi(username, password)
         except Exception as e:
             raise e
+
+        # store valid creds
+        keyring.set_password("minthood-mint", username, password)
 
         mint_accounts = mint.get_accounts()
 

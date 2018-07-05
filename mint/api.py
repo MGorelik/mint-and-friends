@@ -26,6 +26,16 @@ class MintApi(Mint):
         self.mint_user_id = json.loads(doc.get_element_by_id('javascript-user').value)['userId']
         self.browser_auth_api_key = self.driver.execute_script('return window.MintConfig.browserAuthAPIKey')
 
+        # MFA stuff
+        # ius-sign-in-mfa-parent
+        # ius-mfa-choices
+        # ius-mfa-sms-otp-option-item
+        ## ius-mfa-option-email
+        ### ius-label-mfa-send-an-email-to
+        # ius-mfa-option-sms
+        ## ius-mfa-option-sms
+        ### ius-label-mfa-text-me-a-code
+
     def patch(self, url, **kwargs):
         self.driver.request('PATCH', url, **kwargs)
 
