@@ -3,10 +3,8 @@
 ## Installation
 
 1. `pip install -r requirements.txt`
-2. ```
-    brew tap homebrew/cask
-    brew cask install chromedriver
-   ```
+2. ` brew tap homebrew/cask`
+3. `brew cask install chromedriver`
 
 ## Running
 
