@@ -26,18 +26,8 @@ class MintApi(Mint):
         self.mint_user_id = json.loads(doc.get_element_by_id('javascript-user').value)['userId']
         self.browser_auth_api_key = self.driver.execute_script('return window.MintConfig.browserAuthAPIKey')
 
-        # MFA stuff
-        # ius-sign-in-mfa-parent
-        # ius-mfa-choices
-        # ius-mfa-sms-otp-option-item
-        ## ius-mfa-option-email
-        ### ius-label-mfa-send-an-email-to
-        # ius-mfa-option-sms
-        ## ius-mfa-option-sms
-        ### ius-label-mfa-text-me-a-code
-
     def patch(self, url, **kwargs):
-        self.driver.request('PATCH', url, **kwargs)
+        return self.driver.request('PATCH', url, **kwargs)
 
     def set_property_account_value(self, account, value):
         account_id = account['accountId']
@@ -57,14 +47,20 @@ class MintApi(Mint):
                     'content-type': 'application/json'
                     })
 
-        return result
+        if result:
+            if result.status_code == 200 or result.status_code == 204:
+                # check if we got an error
+                # (Mint returns a 200 even on failure and then puts the error in the response text)
+                if 'error' in result.text:
+                    return {'success': False, 'error': result.text}
+                return {'success': True, 'error': None}
+        return {'success': False, 'error': None}
 
-    # TODO: make this work
     def create_property_account(self, account_name, value):
         account_create_url = PROPERTY_CREATE_URL_FORMAT.format(self.get_token())
 
         result = self.post(account_create_url,
-                json={
+                data={
                     'types': 'pr',
                     'accountName': account_name,
                     'accountValue': value,
@@ -77,9 +73,16 @@ class MintApi(Mint):
                     'authorization':
                     'Intuit_APIKey intuit_apikey={}, intuit_apikey_version=1.0'.format(
                         self.browser_auth_api_key),
-                    'content-type': 'application/json'
+                    'content-type': 'application/x-www-form-urlencoded'
                     })
 
-        return result
+        if result:
+            if result.status_code == 200:
+                # check if we got an error
+                # (Mint returns a 200 even on failure and then puts the error in the response text)
+                if 'error' in result.text:
+                    return {'success': False, 'error': result.text}
+                return {'success': True, 'error': None}
+        return {'success': False, 'error': None}
 
 
