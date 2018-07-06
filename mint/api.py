@@ -35,6 +35,13 @@ class MintApi(Mint):
         # ius-mfa-option-sms
         ## ius-mfa-option-sms
         ### ius-label-mfa-text-me-a-code
+        # if self.driver.find_element_by_id('ius-sign-in-mfa-parent'):
+        #     self.handle_mfa()
+
+    def handle_mfa(self):
+        mfa_choices = self.driver.find_element_by_id('ius-mfa-choices')
+
+        print(f"mfa: {mfa_choices}")
 
     def patch(self, url, **kwargs):
         self.driver.request('PATCH', url, **kwargs)
