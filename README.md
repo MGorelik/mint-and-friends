@@ -22,7 +22,7 @@ Once you're logged in, it'll continue.
 The naming convention for this is `Robinhood-{ROBINHOOD_ACCOUNT_NUMBER}`.
 
 ## Updates Roadmap
-1. Dynamically create Mint accounts for each Robinhood account if needed
+1. ~~Dynamically create Mint accounts for each Robinhood account if needed~~ **Done**
 2. Granularity: Mint accounts for each instrument and more if I think of it or people suggest it
 3. ????
 4. Profit!
