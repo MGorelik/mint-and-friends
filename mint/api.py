@@ -47,8 +47,8 @@ class MintApi(Mint):
                     'content-type': 'application/json'
                     })
 
-        if result and result.status_code == 200:
-            if result.status_code == 200:
+        if result:
+            if result.status_code == 200 or result.status_code == 204:
                 # check if we got an error
                 # (Mint returns a 200 even on failure and then puts the error in the response text)
                 if 'error' in result.text:
@@ -57,7 +57,7 @@ class MintApi(Mint):
         return {'success': False, 'error': None}
 
     def create_property_account(self, account_name, value):
-        account_create_url = PROPERTY_CREATE_URL_FORMAT.format(self.get_token() + 'TEST')
+        account_create_url = PROPERTY_CREATE_URL_FORMAT.format(self.get_token())
 
         result = self.post(account_create_url,
                 data={
