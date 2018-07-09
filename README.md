@@ -3,8 +3,15 @@
 ## Installation
 
 1. `pip install -r requirements.txt`
-2. ` brew tap homebrew/cask`
+
+### Mac OS
+2. `brew tap homebrew/cask`
 3. `brew cask install chromedriver`
+
+### Windows
+2. [Download ChromeDriver](http://chromedriver.chromium.org/downloads)
+3. Extract `chromedriver.exe` somewhere
+4. Add that location to your `PATH`
 
 ## Running
 
@@ -24,5 +31,4 @@ The naming convention for this is `Robinhood-{ROBINHOOD_ACCOUNT_NUMBER}`.
 ## Updates Roadmap
 1. ~~Dynamically create Mint accounts for each Robinhood account if needed~~ **Done**
 2. Granularity: Mint accounts for each instrument and more if I think of it or people suggest it
-3. ????
-4. Profit!
+3. Other services (Coinbase, etc)
