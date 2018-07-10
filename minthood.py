@@ -28,7 +28,9 @@ def main():
         portfolio_values = {}
         for account in robinhood_accounts:
             portfolio = robinhood.get_portfolio(account)
-            portfolio_value = max(float(portfolio['equity']), float(portfolio['extended_hours_equity']))
+            equity = portfolio.get('equity') if portfolio.get('equity') else 0
+            equity_after_hours = portfolio.get('extended_hours_equity') if portfolio.get('extended_hours_equity') else 0
+            portfolio_value = max(float(equity), float(equity_after_hours))
             portfolio_values[account.get('account_number')] = portfolio_value
 
         # update the corresponding account in Mint
