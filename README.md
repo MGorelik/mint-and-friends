@@ -13,13 +13,25 @@
 3. Extract `chromedriver.exe` somewhere
 4. Add that location to your `PATH`
 
+## Additional Setup
+
+### Coinbase
+In order to use the Coinbase functionality, you'll need to create an API key to use with the app. The only permission your API key needs is `wallet:accounts:read`. **Make sure to save your API key and secret! The secret will only be shown when you create a key.**
+
+You'll be prompted for those two values when you run the app for the first time.
+
 ## Running
 
-`python minthood.py`
+`python mint_and_friends.py`
 
 The program will prompt you for your Mint and Robinhood credentials.
 Note that since Mint is done via Selenium and Chromedriver, it'll open a Chrome window and log into Mint.
 Once you're logged in, it'll continue.
+
+### Optional Arguments
+You can pass two arguments after the main script name:
+1. `reset_creds`: This will prompt you for all your logins and will update the saved values for that account. Useful if you need to update your password.
+2. `skip_cb`: This will skip Coinbase syncing if you don't want it or don't have a Coinbase account.
 
 ### Caveats
 
