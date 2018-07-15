@@ -33,14 +33,18 @@ You can pass two arguments after the main script name:
 1. `reset_creds`: This will prompt you for all your logins and will update the saved values for that account. Useful if you need to update your password.
 2. `skip_cb`: This will skip Coinbase syncing if you don't want it or don't have a Coinbase account.
 
+### Results
+`Mint and Friends` will create `Property` accounts in Mint for your Robinhood and/or Coinbase accounts.
+
+For Robinhood, it will create one `Property` per account using the naming convention of `Robinhood-{ROBINHOOD_ACCOUNT_NUMBER}`.
+
+For Coinbase, it will create one `Propery` per wallet that you have any currency in using the naming convention of `Coinbase-{CURRENCY}`.
+
 ### Caveats
 
 - If the MFA screen comes up, you'll have to log in manually in the opened chrome window.
 
-- As of right now, the program requires you to have named accounts for your Robinhood accounts.
-The naming convention for this is `Robinhood-{ROBINHOOD_ACCOUNT_NUMBER}`.
-
 ## Updates Roadmap
 1. ~~Dynamically create Mint accounts for each Robinhood account if needed~~ **Done**
 2. Granularity: Mint accounts for each instrument and more if I think of it or people suggest it
-3. Other services (Coinbase, etc)
+3. Other services (~~Coinbase~~ **Done**, etc)
