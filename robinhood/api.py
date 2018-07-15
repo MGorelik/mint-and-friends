@@ -15,23 +15,19 @@ class RobinhoodApi(object):
     def __init__(self, username, password):
         self._username = username
         self._password = password
+        self.login()
 
     def login(self):
-        if self._token:
-            return True
+        if not self._token:
+            response = requests.post(self.ROBINHOOD_API_URL + 'api-token-auth/',
+                                     data={'username': self._username,
+                                           'password': self._password})
 
-        response = requests.post(self.ROBINHOOD_API_URL + 'api-token-auth/',
-                                 data={'username': self._username,
-                                       'password': self._password})
-
-        if response and response.json().get('token'):
-            self._token = response.json().get('token')
-            self._auth_headers = {
-                'Authorization': f"Token {self._token}"
-            }
-            return True
-
-        return False
+            if response and response.json().get('token'):
+                self._token = response.json().get('token')
+                self._auth_headers = {
+                    'Authorization': f"Token {self._token}"
+                }
 
     def get_accounts(self):
         response = requests.get(self.ROBINHOOD_API_URL + 'accounts/', headers=self._auth_headers)
