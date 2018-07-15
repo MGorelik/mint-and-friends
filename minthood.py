@@ -1,3 +1,4 @@
+import sys
 from getpass import getpass
 
 import keyring
@@ -7,8 +8,9 @@ from mint.api import MintApi
 from robinhood.api import RobinhoodApi
 
 
-def main(*args):
-    if args and args[0] == 'coinbase':
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'clear_coinbase':
+        print("clearing cb")
         keyring.delete_password('minthood-coinbase-api', 'coinbase')
         keyring.delete_password('minthood-coinbase-secret', 'coinbase')
 
@@ -38,22 +40,6 @@ def main(*args):
             portfolio_value = max(float(equity), float(equity_after_hours))
             portfolio_values[account.get('account_number')] = portfolio_value
 
-        # update the corresponding account in Mint
-        username = input('Mint username: ')
-
-        password = keyring.get_password('minthood-mint', username)
-
-        if not password:
-            password = getpass('Mint password: ')
-
-        try:
-            mint = MintApi(username, password)
-        except Exception as e:
-            raise e
-
-        # store valid creds
-        keyring.set_password('minthood-mint', username, password)
-
         # log into coinbase
         api_key = keyring.get_password('minthood-coinbase-api', 'coinbase')
 
@@ -71,6 +57,27 @@ def main(*args):
             keyring.set_password('minthood-coinbase-secret', 'coinbase', api_secret)
         except Exception as e:
             raise e
+
+        cb_accounts = coinbase.get_accounts()
+        coinbase_portfolio = {}
+        for cb_account in cb_accounts:
+            coinbase_portfolio[f'{cb_account.balance.currency}-USD'] = cb_account
+
+        # update the corresponding accounts in Mint
+        username = input('Mint username: ')
+
+        password = keyring.get_password('minthood-mint', username)
+
+        if not password:
+            password = getpass('Mint password: ')
+
+        try:
+            mint = MintApi(username, password)
+        except Exception as e:
+            raise e
+
+        # store valid creds
+        keyring.set_password('minthood-mint', username, password)
 
         mint_accounts = mint.get_accounts()
 
@@ -98,11 +105,6 @@ def main(*args):
                         raise e
 
         # do the same for coinbase
-        cb_accounts = coinbase.get_accounts()
-        coinbase_portfolio = {}
-        for cb_account in cb_accounts:
-            coinbase_portfolio[f'{cb_account.balance.currency}-USD'] = cb_account
-
         COINBASE_PREFIX = 'Coinbase-'
         mint_cb_accounts = [mn for mn in mint_accounts if COINBASE_PREFIX in mn.get('name')]
 
@@ -148,38 +150,12 @@ def main(*args):
             account_num = account_name[idx+len(COINBASE_PREFIX):] if idx > -1 else ''
 
             if COINBASE_PREFIX in account_name and account_num:
-                updated = mint.set_property_account_value(account, coinbase_portfolio.get(account_num))
+                value = coinbase.get_account_value(coinbase_portfolio.get(account_num))
+                updated = mint.set_property_account_value(account, value)
                 if updated.get('success'):
                     print(f'Updated value for account {account_name}')
                 else:
                     print(f"Problem updating account {account_name}: {updated.get('error')}")
 
 
-def test_coinbase():
-    api_key = keyring.get_password('minthood-coinbase-api', 'coinbase')
-
-    if not api_key:
-        api_key = input('Coinbase API key: ')
-
-    api_secret = keyring.get_password('minthood-coinbase-secret', 'coinbase')
-
-    if not api_secret:
-        api_secret = input('Coinbase API secret: ')
-
-    try:
-        coinbase = CoinbaseApi(api_key, api_secret)
-        keyring.set_password('minthood-coinbase-api', 'coinbase', api_key)
-        keyring.set_password('minthood-coinbase-secret', 'coinbase', api_secret)
-    except Exception as e:
-        raise e
-
-    accounts = coinbase.get_accounts()
-
-    for account in accounts.data:
-        balance = account.balance
-        print('%s: %s %s' % (account.name, balance.amount, balance.currency))
-        value = coinbase.get_account_value(account)
-        print('val: ', value)
-
 main()
-# test_coinbase()
