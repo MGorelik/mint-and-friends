@@ -1,4 +1,4 @@
-# Minthood - Sync your Robinhood portfolios to Mint
+# Mint and Friends - Sync your Robinhood and Coinbase portfolios to Mint
 
 ## Installation
 
