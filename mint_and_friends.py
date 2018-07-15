@@ -10,14 +10,14 @@ from robinhood.api import RobinhoodApi
 
 def main():
     reset_creds = False
-    skip_cb = False
+    skip_cb = True
     if len(sys.argv) > 1:
+        if 'coinbase' in sys.argv:
+            skip_cb = False
+            print('Coinbase will be included in sync')
         if 'reset_creds' in sys.argv:
             reset_creds = True
-            print("Credentials will be asked for logins")
-        if 'skip_cb' in sys.argv:
-            skip_cb = True
-            print("Skipping Coinbase")
+            print('Credentials will be asked for logins')
 
     username = input('Robinhood username: ')
     password = keyring.get_password('minthood-robinhood', username)

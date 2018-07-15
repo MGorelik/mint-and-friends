@@ -24,14 +24,14 @@ You'll be prompted for those two values when you run the app for the first time.
 
 `python mint_and_friends.py`
 
-The program will prompt you for your Mint and Robinhood credentials.
-Note that since Mint is done via Selenium and Chromedriver, it'll open a Chrome window and log into Mint.
-Once you're logged in, it'll continue.
+The program will prompt you for your Mint and Robinhood credentials. If the `coinbase` flag is passed in,
+it will also ask for your Coinbase API key and secret. Note that since Mint is done via Selenium and Chromedriver,
+it'll open a Chrome window and log into Mint. Once you're logged in, it'll continue.
 
 ### Optional Arguments
 You can pass two arguments after the main script name:
-1. `reset_creds`: This will prompt you for all your logins and will update the saved values for that account. Useful if you need to update your password.
-2. `skip_cb`: This will skip Coinbase syncing if you don't want it or don't have a Coinbase account.
+1. `coinbase`: This will include Coinbase syncing.
+2. `reset_creds`: This will prompt you for all your logins and will update the saved values for that account. Useful if you need to update your password.
 
 ### Results
 `Mint and Friends` will create `Property` accounts in Mint for your Robinhood and/or Coinbase accounts.
