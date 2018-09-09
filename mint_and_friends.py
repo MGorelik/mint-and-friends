@@ -8,16 +8,38 @@ from mint.api import MintApi
 from robinhood.api import RobinhoodApi
 
 
+class ConsoleColors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+# don't mind me, stupid utility function here to make it look like my code is a little cleaner below
+def get_value_color(old_value, new_value):
+    value_color = ConsoleColors.BOLD
+    if new_value > old_value:
+        value_color = ConsoleColors.OKGREEN
+    elif old_value < new_value:
+        value_color = ConsoleColors.FAIL
+
+    return value_color
+
+
 def main():
     reset_creds = False
     skip_cb = True
     if len(sys.argv) > 1:
         if 'coinbase' in sys.argv:
             skip_cb = False
-            print('Coinbase will be included in sync')
+            print(ConsoleColors.BOLD + ConsoleColors.OKBLUE + 'Coinbase will be included in sync' + ConsoleColors.ENDC)
         if 'reset_creds' in sys.argv:
             reset_creds = True
-            print('Credentials will be asked for logins')
+            print(ConsoleColors.BOLD + ConsoleColors.WARNING + 'Credentials will be asked for logins' + ConsoleColors.ENDC)
 
     username = input('Robinhood username: ')
     password = keyring.get_password('minthood-robinhood', username)
@@ -71,7 +93,7 @@ def main():
         cb_accounts = coinbase.get_accounts()
         coinbase_portfolio = {}
         for cb_account in cb_accounts:
-            coinbase_portfolio[f'{cb_account.balance.currency}-USD'] = cb_account
+            coinbase_portfolio['{}-USD'.format(cb_account.balance.currency)] = cb_account
 
     # update the corresponding accounts in Mint
     username = input('Mint username: ')
@@ -106,13 +128,17 @@ def main():
                     exists = True
             if not exists:
                 try:
-                    created = mint.create_property_account(f'{ROBINHOOD_PREFIX}{rb_name}', portfolio_values[rb_name])
+                    created = mint.create_property_account('{}{}'.format(ROBINHOOD_PREFIX, rb_name), portfolio_values[rb_name])
                     if created.get('success'):
-                        print('Created Mint account for Robinhood account {} ({})'.format(rb_name,
-                                                                                          portfolio_values[rb_name]))
+                        print('Created Mint account for Robinhood account {}{}{} (${:,.2f})'.format(ConsoleColors.BOLD,
+                                                                                                    rb_name,
+                                                                                                    ConsoleColors.ENDC,
+                                                                                                    portfolio_values[rb_name]))
                     else:
-                        print('Problem creating Mint account for Robinhood account {}: {}'.format(rb_name,
-                                                                                                  created.get('error')))
+                        print('{}Problem creating Mint account for Robinhood account {}: {}{}'.format(ConsoleColors.FAIL,
+                                                                                                      rb_name,
+                                                                                                      created.get('error'),
+                                                                                                      ConsoleColors.ENDC))
                 except Exception as e:
                     raise e
 
@@ -136,11 +162,15 @@ def main():
                         if account_value > 0:
                             created = mint.create_property_account('{}{}'.format(COINBASE_PREFIX, cb_name), account_value)
                             if created.get('success'):
-                                print('Created Mint account for Coinbase account {} ({})'.format(cb_name, account_value))
+                                print('Created Mint account for Coinbase account {}{}{} (${:,.2f})'.format(ConsoleColors.BOLD,
+                                                                                                           cb_name,
+                                                                                                           ConsoleColors.ENDC,
+                                                                                                           account_value))
                             else:
-                                print(
-                                    'Problem creating Mint account for Coinbase account {}: {}'.format(cb_name,
-                                                                                                       created.get('error')))
+                                print('{}Problem creating Mint account for Coinbase account {}: {}{}'.format(ConsoleColors.FAIL,
+                                                                                                             cb_name,
+                                                                                                             created.get('error'),
+                                                                                                             ConsoleColors.ENDC))
                     except Exception as e:
                         raise e
 
@@ -155,10 +185,14 @@ def main():
             updated = mint.set_property_account_value(account, portfolio_values.get(account_num))
 
             if updated.get('success'):
-                print('Updated value for account {} ({} -> {})'.format(account_name, account.get('value'),
-                                                                       portfolio_values.get(account_num)))
+                result_string = '{}${:,.2f} -> {}${:,.2f}{}'.format(ConsoleColors.BOLD,
+                                                                    account.get('value'),
+                                                                    get_value_color(account.get('value'), portfolio_values.get(account_num)),
+                                                                    portfolio_values.get(account_num),
+                                                                    ConsoleColors.ENDC)
+                print('Updated value for account {}{}{} ({})'.format(ConsoleColors.BOLD, account_name, ConsoleColors.ENDC, result_string))
             else:
-                print('Problem updating account {}: {}'.format(account_name, updated.get('error')))
+                print('{}Problem updating account {}: {}{}'.format(ConsoleColors.FAIL, account_name, updated.get('error'), ConsoleColors.ENDC))
 
         if skip_cb:
             continue
@@ -171,9 +205,16 @@ def main():
             account_value = coinbase.get_account_value(coinbase_portfolio.get(account_num))
             updated = mint.set_property_account_value(account, account_value)
             if updated.get('success'):
-                print('Updated value for account {} ({} -> {})'.format(account_name, account.get('value'), account_value))
+                result_string = '{}${:,.2f} -> {}${:,.2f}{}'.format(ConsoleColors.BOLD,
+                                                                    account.get('value'),
+                                                                    get_value_color(account.get('value'), account_value),
+                                                                    account_value,
+                                                                    ConsoleColors.ENDC)
+
+                print('Updated value for account {}{}{} ({})'.format(ConsoleColors.BOLD, account_name, ConsoleColors.ENDC, result_string))
             else:
-                print('Problem updating account {}: {}'.format(account_name, updated.get('error')))
+                print('{}Problem updating account {}: {}{}'.format(ConsoleColors.FAIL, account_name, updated.get('error'),
+                                                                   ConsoleColors.ENDC))
 
 
 main()
