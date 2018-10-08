@@ -22,6 +22,13 @@ class ConsoleColors:
 # don't mind me, stupid utility function here to make it look like my code is a little cleaner below
 def get_value_color(old_value, new_value):
     value_color = ConsoleColors.BOLD
+
+    if not new_value:
+        new_value = 0
+
+    if not old_value:
+        old_value = 0
+
     if new_value > old_value:
         value_color = ConsoleColors.OKGREEN
     elif old_value < new_value:
@@ -188,7 +195,7 @@ def main():
                 result_string = '{}${:,.2f} -> {}${:,.2f}{}'.format(ConsoleColors.BOLD,
                                                                     account.get('value'),
                                                                     get_value_color(account.get('value'), portfolio_values.get(account_num)),
-                                                                    portfolio_values.get(account_num),
+                                                                    portfolio_values.get(account_num) if portfolio_values.get(account_num) else 0,
                                                                     ConsoleColors.ENDC)
                 print('Updated value for account {}{}{} ({})'.format(ConsoleColors.BOLD, account_name, ConsoleColors.ENDC, result_string))
             else:

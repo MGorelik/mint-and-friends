@@ -3,7 +3,10 @@ API interface for Robinhood
 
 Using the API docs provided by https://github.com/sanko/Robinhood
 '''
+from urllib.parse import urlencode
+
 import requests
+import urllib
 
 
 class RobinhoodApi(object):
@@ -19,14 +22,29 @@ class RobinhoodApi(object):
 
     def login(self):
         if not self._token:
-            response = requests.post(self.ROBINHOOD_API_URL + 'api-token-auth/',
-                                     data={'username': self._username,
-                                           'password': self._password})
 
-            if response and response.json().get('token'):
-                self._token = response.json().get('token')
+            headers = {
+                'accept': '*/*',
+                'content-type': 'application/json',
+            }
+
+            data = {
+                'grant_type': 'password',
+                'scope': 'internal',
+                'client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS',
+                'expires_in': 86400,
+                'password': self._password,
+                'username': self._username,
+            }
+
+            response = requests.post(self.ROBINHOOD_API_URL + 'oauth2/token',
+                                     headers=headers,
+                                     data=data)
+
+            if response and response.json().get('access_token'):
+                self._token = response.json().get('access_token')
                 self._auth_headers = {
-                    'Authorization': f"Token {self._token}"
+                    'Authorization': f"Bearer {self._token}"
                 }
 
     def get_accounts(self):
