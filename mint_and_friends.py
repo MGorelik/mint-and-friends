@@ -1,4 +1,6 @@
 import sys
+from _decimal import Decimal
+from datetime import datetime
 from getpass import getpass
 
 import keyring
@@ -30,7 +32,104 @@ def get_value_color(old_value, new_value):
     return value_color
 
 
-def main():
+def login_mint(reset_creds):
+    # update the corresponding accounts in Mint
+    username = input('Mint username: ')
+
+    password = keyring.get_password('minthood-mint', username)
+
+    if not password or reset_creds:
+        password = getpass('Mint password: ')
+
+    try:
+        mint = MintApi(username, password, mfa_method='sms', mfa_input_callback=True)
+    except Exception as e:
+        raise e
+
+    # store valid creds
+    keyring.set_password('minthood-mint', username, password)
+
+    return mint
+
+
+def canary():
+    reset_creds = False
+    detailed = False
+    if len(sys.argv) > 1:
+        if 'detailed' in sys.argv:
+            detailed = True
+        if 'reset_creds' in sys.argv:
+            reset_creds = True
+            print(ConsoleColors.BOLD + ConsoleColors.WARNING + 'Credentials will be asked for logins' + ConsoleColors.ENDC)
+
+    mint = login_mint(reset_creds)
+
+    mint_accounts = mint.get_accounts()
+
+    credit_cards = []
+    for mint_account in mint_accounts:
+        if mint_account.get('name') == 'CREDIT CARD':
+            credit_cards.append(mint_account)
+
+    # get all of today's transactions for each credit card
+    transaction_dict = {}
+    for credit_card in credit_cards:
+        transactions = mint.get_transactions_json(id=credit_card.get('id'),
+                                                  start_date=datetime.strftime(datetime.today(), '%m/%d/%y'))
+
+        last4 = credit_card.get('yodleeAccountNumberLast4')[3:]
+        transaction_dict[last4] = transactions
+
+    full_cough = clear_throat(transaction_dict)
+    cough(full_cough, detailed)
+
+
+def clear_throat(cough_dict):
+    full_cough = {}
+    categories = {}
+    total = Decimal('0.00')
+    for coughs in cough_dict:
+        for cough in cough_dict[coughs]:
+            category = cough.get('category')
+
+            if category in categories:
+                categories[category].append(cough)
+            else:
+                categories[category] = [cough]
+
+            amt = cough.get('amount')[1:]
+            total += Decimal(amt)
+
+    full_cough['categories'] = categories
+    full_cough['total'] = total
+
+    return full_cough
+
+
+def cough(full_cough, detailed=False):
+    print(ConsoleColors.BOLD + ConsoleColors.HEADER + f"\nYou've spent {full_cough.get('total')} today." + ConsoleColors.ENDC)
+
+    categories = full_cough.get('categories')
+    for category in categories:
+        running_total = Decimal('0.00')
+
+        print('----------------------------------------------------------')
+        print(ConsoleColors.BOLD + ConsoleColors.OKBLUE + f'{category}' + ConsoleColors.ENDC)
+
+        for transaction in categories[category]:
+            amt = transaction.get('amount')[1:]
+            running_total += Decimal(amt)
+
+            if detailed:
+                print('----------------------------------')
+                print(f"Merchant: {transaction.get('mmerchant')}")
+                print(f"Amount: {transaction.get('amount')}")
+                print('----------------------------------')
+
+        print(ConsoleColors.BOLD + f'Total: {running_total}' + ConsoleColors.ENDC)
+
+
+def sync():
     reset_creds = False
     skip_cb = True
     if len(sys.argv) > 1:
@@ -216,5 +315,15 @@ def main():
                 print('{}Problem updating account {}: {}{}'.format(ConsoleColors.FAIL, account_name, updated.get('error'),
                                                                    ConsoleColors.ENDC))
 
+
+def main():
+    if len(sys.argv) > 1:
+        if 'sync' in sys.argv:
+            sync()
+        elif 'canary' in sys.argv:
+            canary()
+        else:
+            print(f'Invalid command: {sys.argv[0]}')
+            exit(1)
 
 main()

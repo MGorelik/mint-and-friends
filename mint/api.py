@@ -19,8 +19,15 @@ class MintApi(Mint):
     browser_auth_api_key = None
     mint_user_id = None
 
-    def login_and_get_token(self, email, password):
-        super(MintApi, self).login_and_get_token(email, password)
+    def login_and_get_token(self, email, password, mfa_method=None,
+                            mfa_input_callback=None, headless=True,
+                            session_path=None, imap_account=None,
+                            imap_password=None,
+                            imap_server=None,
+                            imap_folder=None):
+        super(MintApi, self).login_and_get_token(email, password, mfa_method=mfa_method,
+                                                 mfa_input_callback=mfa_input_callback,
+                                                 headless=headless)
 
         doc = html.document_fromstring(self.get(MINT_OVERVIEW_URL).text)
         self.mint_user_id = json.loads(doc.get_element_by_id('javascript-user').value)['userId']
