@@ -1,6 +1,6 @@
 import sys
 from _decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getpass
 
 import keyring
@@ -55,9 +55,14 @@ def login_mint(reset_creds):
 def canary():
     reset_creds = False
     detailed = False
+    span = 0
     if len(sys.argv) > 1:
         if 'detailed' in sys.argv:
             detailed = True
+        if 'week' in sys.argv:
+            span = 7
+        if 'month' in sys.argv:
+            span = 30
         if 'reset_creds' in sys.argv:
             reset_creds = True
             print(ConsoleColors.BOLD + ConsoleColors.WARNING + 'Credentials will be asked for logins' + ConsoleColors.ENDC)
@@ -73,15 +78,17 @@ def canary():
 
     # get all of today's transactions for each credit card
     transaction_dict = {}
+    start_date = datetime.strftime(datetime.today() - timedelta(days=span), '%m/%d/%y')
+
     for credit_card in credit_cards:
         transactions = mint.get_transactions_json(id=credit_card.get('id'),
-                                                  start_date=datetime.strftime(datetime.today(), '%m/%d/%y'))
+                                                  start_date=start_date)
 
         last4 = credit_card.get('yodleeAccountNumberLast4')[3:]
         transaction_dict[last4] = transactions
 
     full_cough = clear_throat(transaction_dict)
-    cough(full_cough, detailed)
+    cough(full_cough, detailed, span)
 
 
 def clear_throat(cough_dict):
@@ -106,8 +113,15 @@ def clear_throat(cough_dict):
     return full_cough
 
 
-def cough(full_cough, detailed=False):
-    print(ConsoleColors.BOLD + ConsoleColors.HEADER + f"\nYou've spent {full_cough.get('total')} today." + ConsoleColors.ENDC)
+def cough(full_cough, detailed=False, span=0):
+    if span > 0:
+        print(ConsoleColors.BOLD + ConsoleColors.HEADER +
+              f"\nYou've spent {full_cough.get('total')} in the last {span} day(s)." +
+              ConsoleColors.ENDC)
+    else:
+        print(ConsoleColors.BOLD + ConsoleColors.HEADER +
+              f"\nYou've spent {full_cough.get('total')} today." +
+              ConsoleColors.ENDC)
 
     categories = full_cough.get('categories')
     for category in categories:
@@ -124,8 +138,8 @@ def cough(full_cough, detailed=False):
                 print('----------------------------------')
                 print(f"Merchant: {transaction.get('mmerchant')}")
                 print(f"Amount: {transaction.get('amount')}")
-                print('----------------------------------')
 
+        print('----------------------------------')
         print(ConsoleColors.BOLD + f'Total: {running_total}' + ConsoleColors.ENDC)
 
 
@@ -323,7 +337,8 @@ def main():
         elif 'canary' in sys.argv:
             canary()
         else:
-            print(f'Invalid command: {sys.argv[0]}')
+            print(f'Invalid command: {sys.argv[1]}')
             exit(1)
+
 
 main()
