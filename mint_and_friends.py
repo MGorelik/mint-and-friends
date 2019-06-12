@@ -59,6 +59,8 @@ def canary():
     if len(sys.argv) > 1:
         if 'detailed' in sys.argv:
             detailed = True
+        if 'day' in sys.argv:
+            span = 1
         if 'week' in sys.argv:
             span = 7
         if 'month' in sys.argv:
