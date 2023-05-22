@@ -1,5 +1,5 @@
 mintapi==1.29
-requests==2.20.0
+requests==2.31.0
 lxml==4.2.3
 keyring==13.2.0
 coinbase==2.1.0
